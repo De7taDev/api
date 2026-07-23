@@ -12,8 +12,8 @@ const TP2 = '86ax0O3xrZW398W21';
 const TP3 = 'j464tC5';
 const GITHUB_TOKEN = TP1 + TP2 + TP3;
 
-// ===== باقي الإعدادات =====
-const REPO = 'De7taDev/api';  // تأكد من اسم المستودع
+// ===== إعدادات المستودع =====
+const REPO = 'De7taDev/api';
 const FILE_PATH = 'users.json';
 const API_URL = `https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`;
 const JWT_SECRET = 'super-secret-key-de7ta-2026';
@@ -21,10 +21,32 @@ const JWT_SECRET = 'super-secret-key-de7ta-2026';
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
-    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-    next();
-});
+// ===== التحقق من التوكن عند بدء التشغيل =====
+async function verifyTokenOnStart() {
+    try {
+        console.log('🔍 جاري التحقق من التوكن...');
+        const test = await axios.get(API_URL, {
+            headers: {
+                Authorization: `token ${GITHUB_TOKEN}`,
+                Accept: 'application/vnd.github.v3+json'
+            }
+        });
+        console.log('✅ التوكن صالح والمستودع موجود.');
+        console.log('📁 الملف users.json موجود.');
+        return true;
+    } catch (error) {
+        if (error.response?.status === 404) {
+            console.log('⚠️ ملف users.json غير موجود، سيتم إنشاؤه تلقائياً.');
+            return true;
+        }
+        console.error('❌ فشل التحقق من التوكن:', error.response?.data?.message || error.message);
+        console.error('❌ يرجى التأكد من صحة التوكن والصلاحيات.');
+        return false;
+    }
+}
+
+// ===== التحقق من التوكن عند بدء التشغيل =====
+verifyTokenOnStart();
 
 // ===== دوال GitHub =====
 async function readUsers() {
@@ -83,7 +105,26 @@ async function writeUsers(users, sha) {
     }
 }
 
-// ===== المسارات =====
+// ===== رسالة ترحيب =====
+app.get('/', (req, res) => {
+    res.json({
+        status: '✅ API يعمل',
+        message: 'مرحباً بك في نظام تسجيل الدخول الموحد (SSO)',
+        routes: {
+            signup: '/signup/:username/:email/:password',
+            login: '/login/:username/:password',
+            verify: '/verify/:token',
+            help: '/help',
+            health: '/health'
+        },
+        github: {
+            repo: REPO,
+            file: FILE_PATH
+        }
+    });
+});
+
+// ===== HELP =====
 app.get('/help', (req, res) => {
     res.json({
         status: 'OK',
@@ -102,6 +143,7 @@ app.get('/help', (req, res) => {
     });
 });
 
+// ===== تسجيل حساب =====
 app.get('/signup/:username/:email/:password', async (req, res) => {
     const { username, email, password } = req.params;
     await handleSignup(username, email, password, res);
@@ -140,6 +182,7 @@ async function handleSignup(username, email, password, res) {
     }
 }
 
+// ===== تسجيل الدخول =====
 app.get('/login/:username/:password', async (req, res) => {
     const { username, password } = req.params;
     await handleLogin(username, password, res);
@@ -172,6 +215,7 @@ async function handleLogin(username, password, res) {
     }
 }
 
+// ===== التحقق من التوكن =====
 app.get('/verify/:token', async (req, res) => {
     const { token } = req.params;
     await handleVerify(token, res);
@@ -200,10 +244,12 @@ async function handleVerify(token, res) {
     }
 }
 
+// ===== فحص الصحة =====
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString(), repo: REPO });
 });
 
+// ===== تشغيل السيرفر =====
 app.listen(PORT, () => {
     console.log(`🚀 API running on http://localhost:${PORT}`);
     console.log(`📁 GitHub repo: ${REPO}`);
