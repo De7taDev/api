@@ -4,13 +4,15 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-const GITHUB_TOKEN = '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';
-const REPO = 'de7ta/api';
+// ===== إعدادات GitHub من متغيرات البيئة =====
+// ❌ لا تضع التوكن هنا
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const REPO = process.env.GITHUB_REPO || 'de7ta/api';
 const FILE_PATH = 'users.json';
 const API_URL = `https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`;
-const JWT_SECRET = 'super-secret-key-de7ta-2026';
+const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-de7ta-2026';
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -128,7 +130,7 @@ async function handleSignup(username, email, password, res) {
         res.status(201).json({ success: true, message: 'User created', username, email });
     } catch (error) {
         console.error('Signup error:', error);
-        res.status(500).json({ error: 'Internal server error' });
+        res.status(500).json({ error: 'Internal server error', details: error.message });
     }
 }
 
@@ -194,15 +196,6 @@ async function handleVerify(token, res) {
 
 app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString(), repo: REPO });
-});
-
-app.use((req, res) => {
-    res.status(404).json({ error: 'Route not found' });
-});
-
-app.use((err, req, res, next) => {
-    console.error('Unhandled error:', err);
-    res.status(500).json({ error: 'Internal server error' });
 });
 
 app.listen(PORT, () => {
