@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "username": "testuser1",
+    "email": "test1@gmail.com",
+    "password": "$2a$10$4dEQ9KGFNDzO2RUPI1sxxu4uGgZ4Jk0eHl7f6sEJLkE8FwK1v9lqO",
+    "createdAt": "2026-07-23T15:25:19.706Z"
+  },
+  {
+    "username": "testuser2",
+    "email": "test2@gmail.com",
+    "password": "$2a$10$5fFR9MHPNdA3SUQUI2txxu5vHhZ5Kl1fIm8g7tFKmF9GxL2w0mqP",
+    "createdAt": "2026-07-23T15:25:19.706Z"
+  }
+]
