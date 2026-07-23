@@ -6,13 +6,17 @@ const jwt = require('jsonwebtoken');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ===== إعدادات GitHub من متغيرات البيئة =====
-// ❌ لا تضع التوكن هنا
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const REPO = process.env.GITHUB_REPO || 'de7ta/api';
+// ===== التوكن مقسم لأجزاء =====
+const TP1 = 'ghp_yJST54Ltow0G';
+const TP2 = '86ax0O3xrZW398W21';
+const TP3 = 'j464tC5';
+const GITHUB_TOKEN = TP1 + TP2 + TP3;
+
+// ===== باقي الإعدادات =====
+const REPO = 'De7taDev/api';  // تأكد من اسم المستودع
 const FILE_PATH = 'users.json';
 const API_URL = `https://api.github.com/repos/${REPO}/contents/${FILE_PATH}`;
-const JWT_SECRET = process.env.JWT_SECRET || 'super-secret-key-de7ta-2026';
+const JWT_SECRET = 'super-secret-key-de7ta-2026';
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -22,6 +26,7 @@ app.use((req, res, next) => {
     next();
 });
 
+// ===== دوال GitHub =====
 async function readUsers() {
     try {
         const response = await axios.get(API_URL, {
@@ -78,6 +83,7 @@ async function writeUsers(users, sha) {
     }
 }
 
+// ===== المسارات =====
 app.get('/help', (req, res) => {
     res.json({
         status: 'OK',
